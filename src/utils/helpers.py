@@ -1,12 +1,9 @@
-from importlib.metadata import metadata
 from pathlib import Path
 
-def readFile(path: str) -> dict:
-    with open(path, 'r') as f:
-        data: str = f.read()
-        metadata = Path(path).stat()
-        filedata: dict[str,str] = {
-            'data': data,
+def get_file_metadata(filepath: str) -> dict | None:
+    try:
+        metadata = Path(filepath).stat()
+        return {
             "metadata": {
                 "owner" : metadata.st_uid,
                 "group": metadata.st_gid,
@@ -18,4 +15,7 @@ def readFile(path: str) -> dict:
                 "file_attributes":metadata.st_file_attributes,
             }
         }
-    return fileData
+    except Exception as e:
+        print(f"Error getting file metadata: {e}")
+
+
