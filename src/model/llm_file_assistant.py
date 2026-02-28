@@ -1,22 +1,30 @@
 import os
 from google import genai
 from google.genai import types
-from src.service.fs_tools import read_file, list_files, write_file, search_in_file
 
+from constants import ROOT_DIR
+from src.service.fs_tools import read_file, list_files, write_file, search_in_file
+from dotenv import load_dotenv
+
+load_dotenv()
 # Check for API key
-if not os.environ.get("GOOGLE_API_KEY"):
+if not os.getenv("GOOGLE_API_KEY"):
     print("Warning: GOOGLE_API_KEY environment variable not found. Please set it before running.")
+    quit()
 
 class LLMFileAssistant:
     def __init__(self):
-        self.client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY"))
-        self.model_name = "gemini-2.0-flash"
+        self.client = genai.Client(api_key=os.getenv("GOOGLE_API_KEY"))
+        self.model_name = "gemini-2.5-flash"
         self.tools = [read_file, list_files, write_file, search_in_file]
         self.chat = self.client.chats.create(
             model=self.model_name,
             config=types.GenerateContentConfig(
                 tools=self.tools,
-                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False)
+                automatic_function_calling=types.AutomaticFunctionCallingConfig(disable=False),
+                system_instruction=[
+                    load_prompt()
+                ]
             )
         )
 
@@ -28,7 +36,13 @@ class LLMFileAssistant:
             response = self.chat.send_message(query)
             return response.text
         except Exception as e:
-            return f"Error processing query: {str(e)}"
+            print(f"Error processing query: {str(e)}")
+            quit()
+
+
+
+def load_prompt():
+    return open(f'{ROOT_DIR}/src/model/PROMPT.md').read()
 
 # Example usage
 if __name__ == "__main__":
@@ -45,7 +59,11 @@ if __name__ == "__main__":
     while True:
         user_input = input("\nEnter your query (or 'exit' to quit): ")
         if user_input.lower() in ['exit', 'quit']:
+            print("Exiting Resume Assistant. Goodbye!")
+            quit()
             break
-
+        elif KeyboardInterrupt:
+            print("Exiting Resume Assistant. Goodbye!")
+            quit()
         result = assistant.process_query(user_input)
         print(f"\nAssistant: {result}")

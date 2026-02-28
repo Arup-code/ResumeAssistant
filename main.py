@@ -11,15 +11,19 @@ def main():
         try:
             query = input("\nUser: ")
             if query.lower() in ('exit', 'quit'):
+                print("Exiting Resume Assistant. Goodbye!")
+                quit()
                 break
 
             response = assistant.process_query(query)
             print(f"Assistant: {response}")
 
         except KeyboardInterrupt:
-            break
+            print("Exiting Resume Assistant. Goodbye!")
+            quit()
         except Exception as e:
             print(f"Error: {e}")
+            quit()
 
 if __name__ == "__main__":
     main()
